@@ -48,10 +48,19 @@
     color: white;
     cursor: pointer;
     font-weight: bold;
+    margin-right: 8px;
   }
 
   button:hover {
     background: #1d4ed8;
+  }
+
+  .copy-btn {
+    background: #059669;
+  }
+
+  .copy-btn:hover {
+    background: #047857;
   }
 
   .output {
@@ -69,6 +78,12 @@
     color: #f87171;
     font-weight: bold;
   }
+
+  .sucesso {
+    color: #34d399;
+    margin-top: 10px;
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
@@ -80,7 +95,9 @@
   <input id="chave" type="text" maxlength="60" placeholder="Digite a chave NFC-e" />
 
   <button onclick="gerar()">Gerar Infos ChaveNFCe</button>
+  <button class="copy-btn" onclick="copiarResultado()">Copiar Resultado</button>
 
+  <div id="mensagem" class="sucesso"></div>
   <div id="resultado" class="output"></div>
 </div>
 
@@ -88,7 +105,9 @@
 function gerar() {
     const chave = document.getElementById("chave").value.trim();
     const out = document.getElementById("resultado");
+    const mensagem = document.getElementById("mensagem");
 
+    mensagem.textContent = "";
     out.innerHTML = "";
 
     if (chave.length > 44) {
@@ -104,10 +123,12 @@ function gerar() {
     const cUF = chave.substring(0, 2);
     const AAMM = chave.substring(2, 6);
     const CNPJ = chave.substring(6, 20);
+
     function formatCNPJ(cnpj) {
         const digits = cnpj.padStart(14, '0');
         return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
     }
+
     const CNPJ_FORMATADO = formatCNPJ(CNPJ);
     const MOD = chave.substring(20, 22);
     const SERIE = chave.substring(22, 25);
@@ -115,37 +136,38 @@ function gerar() {
     const TPEMIS = chave.substring(34, 35);
     const CNF = chave.substring(35, 43);
     const DV = chave.substring(43, 44);
+
     const UF_MAP = {
-            "11": "Rondônia",
-            "12": "Acre",
-            "13": "Amazonas",
-            "14": "Roraima",
-            "15": "Pará",
-            "16": "Amapá",
-            "17": "Tocantins",
-            "21": "Maranhão",
-            "22": "Piauí",
-            "23": "Ceará",
-            "24": "Rio Grande do Norte",
-            "25": "Paraíba",
-            "26": "Pernambuco",
-            "27": "Alagoas",
-            "28": "Sergipe",
-            "29": "Bahia",
-            "31": "Minas Gerais",
-            "32": "Espírito Santo",
-            "33": "Rio de Janeiro",
-            "35": "São Paulo",
-            "41": "Paraná",
-            "42": "Santa Catarina",
-            "43": "Rio Grande do Sul",
-            "50": "Mato Grosso do Sul",
-            "51": "Mato Grosso",
-            "52": "Goiás",
-            "53": "Distrito Federal"
-        };
-    
-        const UF_NOME = UF_MAP[cUF] || "UF desconhecida";
+        "11": "Rondônia",
+        "12": "Acre",
+        "13": "Amazonas",
+        "14": "Roraima",
+        "15": "Pará",
+        "16": "Amapá",
+        "17": "Tocantins",
+        "21": "Maranhão",
+        "22": "Piauí",
+        "23": "Ceará",
+        "24": "Rio Grande do Norte",
+        "25": "Paraíba",
+        "26": "Pernambuco",
+        "27": "Alagoas",
+        "28": "Sergipe",
+        "29": "Bahia",
+        "31": "Minas Gerais",
+        "32": "Espírito Santo",
+        "33": "Rio de Janeiro",
+        "35": "São Paulo",
+        "41": "Paraná",
+        "42": "Santa Catarina",
+        "43": "Rio Grande do Sul",
+        "50": "Mato Grosso do Sul",
+        "51": "Mato Grosso",
+        "52": "Goiás",
+        "53": "Distrito Federal"
+    };
+
+    const UF_NOME = UF_MAP[cUF] || "UF desconhecida";
 
     let statusChave = "";
 
@@ -171,6 +193,28 @@ Codigo Numerico......: ${CNF}
 Digito Verificador...: ${DV}`;
 
     out.textContent = texto;
+}
+
+function copiarResultado() {
+    const resultado = document.getElementById("resultado").textContent;
+    const mensagem = document.getElementById("mensagem");
+
+    if (!resultado.trim()) {
+        mensagem.textContent = "Nenhum resultado para copiar.";
+        return;
+    }
+
+    navigator.clipboard.writeText(resultado)
+        .then(() => {
+            mensagem.textContent = "Resultado copiado com sucesso!";
+            
+            setTimeout(() => {
+                mensagem.textContent = "";
+            }, 3000);
+        })
+        .catch(() => {
+            mensagem.textContent = "Erro ao copiar resultado.";
+        });
 }
 </script>
 
