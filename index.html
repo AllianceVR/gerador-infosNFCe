@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Decodificador Chave NFC-e</title>
+
 <style>
   body {
     font-family: Arial, Helvetica, sans-serif;
@@ -37,6 +38,7 @@
     color: #e5e7eb;
     font-size: 14px;
     margin-top: 8px;
+    box-sizing: border-box;
   }
 
   button {
@@ -48,10 +50,26 @@
     color: white;
     cursor: pointer;
     font-weight: bold;
+    display: inline-block;
+    transition: 0.2s;
   }
 
   button:hover {
     background: #1d4ed8;
+  }
+
+  .copy-btn {
+    background: #059669;
+  }
+
+  .copy-btn:hover {
+    background: #047857;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
   .output {
@@ -60,35 +78,64 @@
     border: 1px solid #374151;
     border-radius: 8px;
     padding: 12px;
-    white-space: pre;
+    white-space: pre-wrap;
     font-family: Consolas, monospace;
     min-height: 220px;
+    word-break: break-word;
   }
 
   .error {
     color: #f87171;
     font-weight: bold;
   }
+
+  .sucesso {
+    color: #34d399;
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: bold;
+  }
 </style>
 </head>
+
 <body>
 
 <div class="container">
+
   <h1>Decodificador Chave NFC-e</h1>
 
   <label>Informe a chave NFC-e (44 dígitos):</label>
-  <input id="chave" type="text" maxlength="60" placeholder="Digite a chave NFC-e" />
 
-  <button onclick="gerar()">Gerar Infos ChaveNFCe</button>
+  <input 
+    id="chave"
+    type="text"
+    maxlength="60"
+    placeholder="Digite a chave NFC-e"
+  />
+
+  <div class="buttons">
+    <button onclick="gerar()">Gerar Infos ChaveNFCe</button>
+
+    <button class="copy-btn" onclick="copiarResultado()">
+      Copiar Resultado
+    </button>
+  </div>
+
+  <div id="mensagem" class="sucesso"></div>
 
   <div id="resultado" class="output"></div>
+
 </div>
 
 <script>
+
 function gerar() {
+
     const chave = document.getElementById("chave").value.trim();
     const out = document.getElementById("resultado");
+    const mensagem = document.getElementById("mensagem");
 
+    mensagem.textContent = "";
     out.innerHTML = "";
 
     if (chave.length > 44) {
@@ -104,50 +151,59 @@ function gerar() {
     const cUF = chave.substring(0, 2);
     const AAMM = chave.substring(2, 6);
     const CNPJ = chave.substring(6, 20);
+
     function formatCNPJ(cnpj) {
+
         const digits = cnpj.padStart(14, '0');
-        return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+
+        return digits.replace(
+            /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+            "$1.$2.$3/$4-$5"
+        );
     }
+
     const CNPJ_FORMATADO = formatCNPJ(CNPJ);
+
     const MOD = chave.substring(20, 22);
     const SERIE = chave.substring(22, 25);
     const NNF = chave.substring(25, 34);
     const TPEMIS = chave.substring(34, 35);
     const CNF = chave.substring(35, 43);
     const DV = chave.substring(43, 44);
-    const UF_MAP = {
-            "11": "Rondônia",
-            "12": "Acre",
-            "13": "Amazonas",
-            "14": "Roraima",
-            "15": "Pará",
-            "16": "Amapá",
-            "17": "Tocantins",
-            "21": "Maranhão",
-            "22": "Piauí",
-            "23": "Ceará",
-            "24": "Rio Grande do Norte",
-            "25": "Paraíba",
-            "26": "Pernambuco",
-            "27": "Alagoas",
-            "28": "Sergipe",
-            "29": "Bahia",
-            "31": "Minas Gerais",
-            "32": "Espírito Santo",
-            "33": "Rio de Janeiro",
-            "35": "São Paulo",
-            "41": "Paraná",
-            "42": "Santa Catarina",
-            "43": "Rio Grande do Sul",
-            "50": "Mato Grosso do Sul",
-            "51": "Mato Grosso",
-            "52": "Goiás",
-            "53": "Distrito Federal"
-        };
-    
-        const UF_NOME = UF_MAP[cUF] || "UF desconhecida";
 
-    let statusChave = "";
+    const UF_MAP = {
+        "11": "Rondônia",
+        "12": "Acre",
+        "13": "Amazonas",
+        "14": "Roraima",
+        "15": "Pará",
+        "16": "Amapá",
+        "17": "Tocantins",
+        "21": "Maranhão",
+        "22": "Piauí",
+        "23": "Ceará",
+        "24": "Rio Grande do Norte",
+        "25": "Paraíba",
+        "26": "Pernambuco",
+        "27": "Alagoas",
+        "28": "Sergipe",
+        "29": "Bahia",
+        "31": "Minas Gerais",
+        "32": "Espírito Santo",
+        "33": "Rio de Janeiro",
+        "35": "São Paulo",
+        "41": "Paraná",
+        "42": "Santa Catarina",
+        "43": "Rio Grande do Sul",
+        "50": "Mato Grosso do Sul",
+        "51": "Mato Grosso",
+        "52": "Goiás",
+        "53": "Distrito Federal"
+    };
+
+    const UF_NOME = UF_MAP[cUF] || "UF desconhecida";
+
+    let statusChave = "Tipo emissão desconhecida";
 
     if (TPEMIS === "1") {
         statusChave = "ChaveNFCe gerada NORMAL";
@@ -172,6 +228,44 @@ Digito Verificador...: ${DV}`;
 
     out.textContent = texto;
 }
+
+function copiarResultado() {
+
+    const resultado = document.getElementById("resultado").textContent;
+    const mensagem = document.getElementById("mensagem");
+
+    if (!resultado.trim()) {
+
+        mensagem.textContent = "Nenhum resultado para copiar.";
+
+        setTimeout(() => {
+            mensagem.textContent = "";
+        }, 3000);
+
+        return;
+    }
+
+    navigator.clipboard.writeText(resultado)
+        .then(() => {
+
+            mensagem.textContent = "Resultado copiado com sucesso!";
+
+            setTimeout(() => {
+                mensagem.textContent = "";
+            }, 3000);
+
+        })
+        .catch(() => {
+
+            mensagem.textContent = "Erro ao copiar resultado.";
+
+            setTimeout(() => {
+                mensagem.textContent = "";
+            }, 3000);
+
+        });
+}
+
 </script>
 
 </body>
